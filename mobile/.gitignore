@@ -1,0 +1,8 @@
+node_modules/
+www/config.js
+android/app/build/
+android/.gradle/
+android/build/
+ios/App/Pods/
+ios/DerivedData/
+KARVAAN-test.apk

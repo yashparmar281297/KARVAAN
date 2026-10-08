@@ -1,0 +1,37 @@
+{
+  "appId": "in.karvaan.app",
+  "appName": "KARVAAN",
+  "webDir": "www",
+  "backgroundColor": "#070708",
+  "server": {
+    "url": "http://192.168.1.3:3000",
+    "cleartext": true,
+    "androidScheme": "https",
+    "allowNavigation": [
+      "192.168.1.3"
+    ],
+    "errorPath": "error.html"
+  },
+  "android": {
+    "backgroundColor": "#070708",
+    "allowMixedContent": true
+  },
+  "ios": {
+    "backgroundColor": "#070708",
+    "contentInset": "always",
+    "scheme": "KARVAAN"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#070708",
+      "showSpinner": false,
+      "androidScaleType": "CENTER_CROP"
+    },
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DARK"
+    }
+  }
+}

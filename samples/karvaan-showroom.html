@@ -1,0 +1,412 @@
+<title>KARVAAN Showroom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500&family=Geist+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: a dark showroom told in scroll scenes, built from the members'
+     own photos and videos shown as they are (no filters). Video reveal →
+     one machine at a time → the drive → the people → AG7 CARS → club & event → join. */
+  :root {
+    color-scheme: dark;
+    --black: #060607;    /* studio */
+    --panel: #111114;    /* plates */
+    --line: #f1ede41f;   /* hairlines */
+    --white: #f1ede4;    /* type */
+    --grey: #a3a09a;     /* secondary type */
+    --dim: #6f6d68;      /* captions */
+    --ember: #e4572e;    /* KARVAAN accent */
+    --glow: #9fd630;     /* current machine's colour (set by script) */
+    --heavy: "Archivo", "Arial Black", Impact, sans-serif;
+    --serif: "Instrument Serif", "Bodoni 72", Didot, Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+    --g: clamp(16px, 4.5vw, 64px);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--black); color: var(--white); font: 400 16px/1.6 var(--sans); overflow-x: clip; }
+  a { color: inherit; }
+  img, video { max-width: 100%; display: block; }
+  :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+  .label { font: 500 11px/1.4 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--grey); margin: 0; }
+  .heavy { font-family: var(--heavy); font-stretch: 125%; font-weight: 850; text-transform: uppercase; letter-spacing: -.01em; line-height: .9; }
+  .it { font-family: var(--serif); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: -.01em; }
+  .sec-head { display: grid; gap: 14px; max-width: 760px; }
+  .sec-head h2 { margin: 0; font-size: clamp(2.4rem, 6vw, 5.2rem); }
+  .sec-head h2 .it { color: var(--ember); }
+  .sec-head p { margin: 0; color: var(--grey); max-width: 52ch; }
+
+  /* ---------- nav ---------- */
+  .nav { position: fixed; z-index: 50; top: 0; left: 0; right: 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) var(--g) 16px; background: linear-gradient(#060607d9, #06060700); }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo b { font: 850 16px/1 var(--heavy); font-stretch: 125%; letter-spacing: .06em; }
+  .nav-mid { font: 500 10px/1.4 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--grey); text-align: center; }
+  .nav-end { display: flex; justify-content: flex-end; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border-radius: 99px; text-decoration: none; font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; border: 1px solid #f1ede440; transition: background .25s, color .25s; }
+  .pill:hover { background: var(--white); color: var(--black); }
+  .pill.solid { background: var(--white); color: var(--black); border-color: var(--white); }
+  @media (max-width: 720px) { .nav-mid { display: none; } .nav { grid-template-columns: 1fr auto; } .nav .pill:not(.solid) { display: none; } }
+
+  .scene { position: relative; }
+  .pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+
+  /* ---------- 1. video reveal ---------- */
+  #reveal { height: 190vh; }
+  .hero-film { position: absolute; inset: 0; clip-path: inset(calc(var(--hp, 0) * 9%) calc(var(--hp, 0) * 7%) round calc(var(--hp, 0) * 28px)); }
+  .hero-film video { width: 100%; height: 100%; object-fit: cover; }
+  .hero-film::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #060607b3, transparent 55%), linear-gradient(transparent 60%, #060607cc); }
+  .hero-copy { position: absolute; left: var(--g); bottom: 15vh; z-index: 3; max-width: min(620px, 88vw); transform: translateY(calc(var(--hp, 0) * -40px)); }
+  .hero-copy h1 { margin: 14px 0 0; font-size: clamp(2.8rem, 7.6vw, 7rem); }
+  .hero-copy h1 .it { display: block; font-size: 1.12em; line-height: .95; margin: .02em 0 .04em; }
+  .hero-copy p { color: var(--grey); max-width: 42ch; margin: 18px 0 0; }
+  .hero-side { position: absolute; z-index: 3; right: var(--g); bottom: 15vh; display: grid; gap: 18px; justify-items: end; text-align: right; }
+  .hero-side b { display: block; font: 600 clamp(22px, 3vw, 32px)/1 var(--mono); }
+  .cue { display: flex; align-items: center; gap: 12px; }
+  .cue i { width: 1px; height: 40px; background: linear-gradient(var(--white), transparent); }
+  @media (prefers-reduced-motion: no-preference) { .cue i { animation: cue 2s ease-in-out infinite; transform-origin: top; } }
+  @keyframes cue { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+  @media (max-width: 720px) { .hero-side { display: none; } .hero-copy { bottom: 12vh; } }
+
+  /* ---------- 2. showcase ---------- */
+  #showcase { height: 400vh; }
+  .stage { background: radial-gradient(50% 45% at 50% 55%, color-mix(in srgb, var(--glow) 30%, transparent) 0%, transparent 72%), var(--black); transition: background .8s; }
+  .ghost { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -60%); white-space: nowrap; pointer-events: none;
+    font: 900 clamp(4.5rem, 19vw, 19rem)/1 var(--heavy); font-stretch: 125%; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1px #f1ede42e; }
+  .slides { position: absolute; inset: 0; perspective: 1400px; }
+  .slide { position: absolute; left: 50%; top: 52%; width: min(30vw, 400px); aspect-ratio: 4 / 5;
+    transform: translate(-50%, -50%) translateX(calc(var(--d) * 56vw)) rotateY(calc(var(--d) * -38deg)) scale(calc(1 - min(1, var(--a)) * .22));
+    opacity: calc(1 - min(1, var(--a)) * 1.1); will-change: transform, opacity; }
+  .slide .shot { position: absolute; inset: 0; border-radius: 18px; overflow: hidden; box-shadow: 0 40px 90px -30px color-mix(in srgb, var(--c) 70%, #000), 0 0 0 1px #ffffff1a; }
+  .slide .shot img { width: 100%; height: 100%; object-fit: cover; }
+  .slide .mirror { position: absolute; left: 0; right: 0; top: calc(100% + 10px); height: 30%; border-radius: 18px; overflow: hidden; transform: scaleY(-1); opacity: .18;
+    -webkit-mask-image: linear-gradient(to top, #000, transparent 75%); mask-image: linear-gradient(to top, #000, transparent 75%); }
+  .slide .mirror img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 100%; }
+  .info { position: absolute; inset: 0; pointer-events: none; }
+  .panel { position: absolute; opacity: calc(1 - min(1, var(--a) * 2.2)); transform: translateY(calc(var(--d) * 30px)); }
+  .p-name { left: var(--g); top: 18vh; max-width: 28vw; }
+  .p-name h2 { margin: 10px 0 0; font-size: clamp(2.2rem, 4.6vw, 4.4rem); }
+  .p-name h2 .it { display: block; font-size: .78em; color: var(--grey); margin-top: .12em; }
+  .p-name .tag { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .chip { font: 600 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; padding: 8px 12px; border-radius: 99px; border: 1px solid #f1ede440; }
+  .chip.glow { border-color: color-mix(in srgb, var(--c) 60%, transparent); color: var(--c); }
+  .p-spec { right: var(--g); top: 18vh; width: min(270px, 24vw); text-align: right; }
+  .ovr { font: 850 clamp(3.6rem, 7vw, 6.4rem)/.85 var(--heavy); font-stretch: 125%; }
+  .ovr small { display: block; font: 500 11px/1 var(--mono); letter-spacing: .24em; color: var(--grey); margin-top: 8px; }
+  .specs { margin: 24px 0 0; display: grid; }
+  .specs div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .specs dt { font: 500 10px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--dim); }
+  .specs dd { margin: 0; font: 600 clamp(16px, 1.5vw, 20px)/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .specs dd small { font-size: .62em; color: var(--dim); margin-left: 4px; font-weight: 400; }
+  .p-owner { left: var(--g); bottom: 9vh; display: flex; align-items: center; gap: 12px; }
+  .p-owner img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+  .pager { position: absolute; right: var(--g); bottom: 9vh; display: flex; align-items: center; gap: 16px; z-index: 2; }
+  .pager .now { font: 600 28px/1 var(--mono); }
+  .pager .bar { width: clamp(80px, 12vw, 160px); height: 1px; background: #f1ede433; }
+  .pager .bar i { display: block; height: 100%; width: 0; background: var(--white); }
+  @media (max-width: 900px) {
+    .slide { width: min(64vw, 340px); top: 47%; }
+    .p-name { top: 11vh; max-width: 84vw; }
+    .p-name h2 { font-size: 2.2rem; }
+    .p-spec { top: auto; bottom: 14vh; left: var(--g); right: var(--g); width: auto; text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: end; }
+    .ovr { font-size: 3rem; }
+    .specs { grid-template-columns: 1fr 1fr; margin: 0; column-gap: 14px; }
+    .specs div { padding: 7px 0; }
+    .specs div:nth-child(5) { display: none; }
+    .p-owner, .pager { bottom: 5vh; }
+  }
+
+  /* ---------- 3. the drive (video band) ---------- */
+  .drive { padding: 16vh var(--g) 10vh; display: grid; gap: 40px; }
+  .film { position: relative; border-radius: 22px; overflow: hidden; aspect-ratio: 16 / 9; max-height: 82vh; width: 100%;
+    transform: scale(calc(.9 + var(--dp, 0) * .1)); transition: transform .1s linear; }
+  .film video { width: 100%; height: 100%; object-fit: cover; }
+  .film .over { position: absolute; left: 0; right: 0; bottom: 0; padding: clamp(18px, 3vw, 36px); display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+    background: linear-gradient(transparent, #060607cc); }
+  .film .over h3 { margin: 0; font-size: clamp(1.8rem, 4vw, 3.4rem); }
+
+  /* ---------- 4. the people (photo wall) ---------- */
+  .people { padding: 12vh 0 12vh; overflow: hidden; }
+  .people .sec-head { padding-inline: var(--g); }
+  .rows { margin-top: 8vh; display: grid; gap: clamp(10px, 1.6vw, 18px); perspective: 1600px; }
+  .row { display: flex; gap: clamp(10px, 1.6vw, 18px); width: max-content; transform: translateX(var(--x)) rotateX(8deg); will-change: transform; }
+  .tile { position: relative; width: clamp(200px, 24vw, 340px); aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; flex: none; background: var(--panel); margin: 0; }
+  .tile.wide { aspect-ratio: 16 / 10; width: clamp(300px, 38vw, 540px); }
+  .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s cubic-bezier(.16, 1, .3, 1); }
+  .tile:hover img { transform: scale(1.04); }
+  .tile figcaption { position: absolute; left: 12px; bottom: 12px; font: 600 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; background: #060607b3; padding: 8px 10px; border-radius: 99px; backdrop-filter: blur(6px); }
+
+  /* ---------- 5. AG7 CARS ---------- */
+  .biz { padding: 12vh var(--g); display: grid; gap: 6vh; }
+  .biz-grid { display: grid; grid-template-columns: 1fr 1fr 1.6fr; grid-template-rows: auto auto; gap: clamp(10px, 1.6vw, 18px); }
+  .biz-grid > * { position: relative; border-radius: 16px; overflow: hidden; background: var(--panel); min-width: 0; margin: 0; }
+  .vclip { grid-row: span 2; aspect-ratio: 9 / 16; }
+  .vclip video, .biz-grid img { width: 100%; height: 100%; object-fit: cover; }
+  .biz-card { padding: clamp(20px, 3vw, 34px); display: grid; align-content: space-between; gap: 22px; border: 1px solid var(--line); }
+  .biz-card .brand { display: flex; align-items: center; gap: 14px; }
+  .biz-card .brand img { width: 54px; height: 54px; border-radius: 12px; }
+  .biz-card h3 { margin: 0; font-size: clamp(1.8rem, 3.4vw, 3rem); }
+  .biz-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .biz-photo { aspect-ratio: 16 / 10; }
+  @media (max-width: 900px) { .biz-grid { grid-template-columns: 1fr 1fr; } .biz-card, .biz-photo { grid-column: span 2; } .vclip { grid-row: auto; } }
+
+  /* ---------- 6. club & event ---------- */
+  .duo { padding: 6vh var(--g) 14vh; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
+  .plate { position: relative; border-radius: 16px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); display: grid; min-width: 0; }
+  .plate .pic { aspect-ratio: 16 / 9; position: relative; overflow: hidden; }
+  .plate .pic img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.16, 1, .3, 1); }
+  .plate:hover .pic > img { transform: scale(1.04); }
+  .plate .txt { padding: clamp(18px, 3vw, 30px); display: grid; gap: 14px; }
+  .plate h3 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.6rem); }
+  .seal { position: absolute; left: 16px; bottom: 16px; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 3px var(--panel); }
+  .seal img { width: 100%; height: 100%; object-fit: cover; }
+  .figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .figs div { padding: 14px 0 0; }
+  .figs div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+  .figs b { display: block; font: 600 clamp(1.2rem, 2.4vw, 1.8rem)/1 var(--mono); }
+  .figs span { font: 500 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+  .date { position: absolute; top: 16px; left: 16px; text-align: center; background: #060607b3; border-radius: 10px; padding: 10px 14px; backdrop-filter: blur(6px); }
+  .date b { display: block; font: 850 2.2rem/.85 var(--heavy); font-stretch: 125%; }
+  .date span { font: 600 10px/1 var(--mono); letter-spacing: .2em; color: var(--ember); }
+  @media (max-width: 820px) { .duo { grid-template-columns: 1fr; } }
+
+  /* ---------- 7. join ---------- */
+  .join { position: relative; min-height: 92vh; display: grid; align-items: end; padding: 14vh var(--g) 12vh; overflow: hidden; }
+  .join .bg { position: absolute; inset: 0; }
+  .join .bg img { width: 100%; height: 100%; object-fit: cover; transform: scale(calc(1.12 - var(--jp, 0) * .12)); }
+  .join .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 35%, #060607e6 88%); }
+  .join > div { position: relative; display: grid; gap: 20px; max-width: 760px; }
+  .join h2 { margin: 0; font-size: clamp(3rem, 10vw, 8.6rem); }
+  .join h2 .it { color: var(--ember); font-size: 1.1em; }
+  .join p { color: #f1ede4d9; max-width: 46ch; margin: 0; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; height: 50px; padding: 0 26px; text-decoration: none; font: 600 12px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); background: var(--white); color: var(--black); transition: transform .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background: #06060799; color: var(--white); box-shadow: inset 0 0 0 1px #f1ede466; }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 28px var(--g) calc(28px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); color: var(--dim); font-size: 13px; }
+
+  @media (prefers-reduced-motion: reduce) { .stage, .film, .tile img, .plate .pic img, .btn { transition: none; } }
+</style>
+
+<header class="nav">
+  <a class="logo" href="#reveal" aria-label="KARVAAN home">
+    <svg width="31" height="21" viewBox="0 0 36 24" aria-hidden="true"><path d="M2 3h6l8 9-8 9H2l8-9Z" fill="#f1ede4"/><path d="M13 3h5l8 9-8 9h-5l8-9Z" fill="#f1ede4" opacity=".55"/><path d="M23 3h4l8 9-8 9h-4l8-9Z" fill="#e4572e"/></svg>
+    <b>KARVAAN</b>
+  </a>
+  <p class="nav-mid">Cars · Bikes · Clubs · Events<br>India's automotive community</p>
+  <div class="nav-end"><a class="pill" href="#showcase">Collection</a><a class="pill solid" href="#join">Join</a></div>
+</header>
+
+<main>
+  <!-- 1. VIDEO REVEAL -->
+  <section class="scene" id="reveal" aria-label="Introduction">
+    <div class="pin">
+      <div class="hero-film"><video src="showroom2/reveal.mp4" poster="showroom2/reveal.jpg" autoplay muted loop playsinline preload="auto" aria-label="Car headlights switching on in a dark studio"></video></div>
+      <div class="hero-copy">
+        <p class="label">Est. Indore · MP 09</p>
+        <h1 class="heavy">India's<span class="it">automotive</span>community</h1>
+        <p>Every machine has an owner, a club and a road. Show yours, find your people, drive together.</p>
+      </div>
+      <div class="hero-side">
+        <div><b>06</b><span class="label">Members</span></div>
+        <div><b>03</b><span class="label">Machines</span></div>
+        <p class="label cue"><i></i>Scroll</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. SHOWCASE -->
+  <section class="scene" id="showcase" aria-label="The collection">
+    <div class="pin stage">
+      <div class="ghost" id="ghost" aria-hidden="true">Huracán</div>
+      <div class="slides" id="slides"></div>
+      <div class="info" id="info"></div>
+      <div class="pager"><span class="now" id="now">01</span><span class="bar"><i id="pbar"></i></span><span class="label" id="of">03</span></div>
+    </div>
+  </section>
+
+  <!-- 3. THE DRIVE -->
+  <section class="drive" id="drive">
+    <div class="sec-head">
+      <p class="label">Drives &amp; rides</p>
+      <h2 class="heavy">Never drive <span class="it">alone</span></h2>
+      <p>Clubs and organisers post drives, rides and meets. Register in two taps and roll out together.</p>
+    </div>
+    <div class="film" id="film">
+      <video src="showroom2/drive.mp4" poster="showroom2/drive.jpg" autoplay muted loop playsinline preload="metadata" aria-label="A yellow Nissan GT-R and a superbike on a highway"></video>
+      <div class="over"><h3 class="heavy">Sunday <span class="it">convoy</span></h3><span class="label">Cars + bikes · one road</span></div>
+    </div>
+  </section>
+
+  <!-- 4. THE PEOPLE -->
+  <section class="people" id="people">
+    <div class="sec-head">
+      <p class="label">The community</p>
+      <h2 class="heavy">The people behind <span class="it">the machines</span></h2>
+      <p>Owners, clubs and businesses from Indore and beyond. Every photo here was shared by a KARVAAN member.</p>
+    </div>
+    <div class="rows" id="rows">
+      <div class="row" data-dir="1">
+        <figure class="tile"><img src="showroom2/honey.jpg" alt="Honey Bhatia at a race track" loading="lazy"><figcaption>Honey Bhatia · Owner</figcaption></figure>
+        <figure class="tile wide"><img src="showroom2/club-convoy.jpg" alt="Porsche Taycan and Lamborghini Huracán on the highway" loading="lazy"><figcaption>Malwa Supercars Club</figcaption></figure>
+        <figure class="tile"><img src="showroom2/devang.jpg" alt="Devang Maheshwari with a Shelby Cobra" loading="lazy"><figcaption>Devang Maheshwari · Owner</figcaption></figure>
+        <figure class="tile"><img src="showroom2/tile-supercars.jpg" alt="White Porsche 911 GT3 RS on a ramp" loading="lazy"><figcaption>Supercars</figcaption></figure>
+        <figure class="tile wide"><img src="showroom2/ag7-cullinan.jpg" alt="Rolls-Royce Cullinan in a showroom" loading="lazy"><figcaption>AG7 Cars</figcaption></figure>
+      </div>
+      <div class="row" data-dir="-1">
+        <figure class="tile"><img src="showroom2/octavia-2.jpg" alt="Blue Skoda Octavia VRS" loading="lazy"><figcaption>Sleeper</figcaption></figure>
+        <figure class="tile wide"><img src="showroom2/tile-superbikes.jpg" alt="Superbike leaning into a corner" loading="lazy"><figcaption>Superbikes</figcaption></figure>
+        <figure class="tile"><img src="showroom2/hero.jpg" alt="BMW M4 and a cruiser leading a line of cars" loading="lazy"><figcaption>Meets</figcaption></figure>
+        <figure class="tile wide"><img src="showroom2/ag7-delivery.jpg" alt="Ferrari delivery celebration" loading="lazy"><figcaption>Deliveries</figcaption></figure>
+        <figure class="tile"><img src="showroom2/tile-events.jpg" alt="Cars gathered at an event" loading="lazy"><figcaption>Events</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. AG7 CARS -->
+  <section class="biz" id="business">
+    <div class="sec-head">
+      <p class="label">Automotive businesses</p>
+      <h2 class="heavy">Trusted by <span class="it">the garage</span></h2>
+    </div>
+    <div class="biz-grid">
+      <figure class="vclip"><video src="showroom2/ag7-grille.mp4" poster="showroom2/ag7-grille.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Close-up of a BMW grille"></video></figure>
+      <figure class="vclip"><video src="showroom2/ag7-badge.mp4" poster="showroom2/ag7-badge.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Close-up of a Ferrari badge"></video></figure>
+      <div class="biz-card">
+        <div class="brand"><img src="showroom2/ag7-logo.jpg" alt="AG7 Cars logo"><div><p class="label">Business · Indore</p><h3 class="heavy">AG7 <span class="it">Cars</span></h3></div></div>
+        <p style="margin:0;color:var(--grey)">Businesses list their services on KARVAAN, gain followers and collect reviews from the people who drive.</p>
+        <ul><li class="chip">Services</li><li class="chip">Followers</li><li class="chip">Reviews</li></ul>
+      </div>
+      <figure class="biz-photo"><img src="showroom2/ag7-delivery.jpg" alt="Ferrari delivery celebration at AG7 Cars" loading="lazy"></figure>
+    </div>
+  </section>
+
+  <!-- 6. CLUB & EVENT -->
+  <section class="duo" aria-label="Clubs and events">
+    <article class="plate">
+      <div class="pic"><img src="showroom2/club.jpg" alt="Malwa Supercar Club cars on a highway" loading="lazy"><span class="seal"><img src="showroom2/club-logo.jpg" alt="Malwa Supercars Club logo"></span></div>
+      <div class="txt">
+        <p class="label">Supercar club · Indore</p>
+        <h3 class="heavy">Malwa <span class="it">Supercar</span> Club</h3>
+        <div class="figs"><div><b>15+</b><span>Members</span></div><div><b>20+</b><span>Vehicles</span></div><div><b>01</b><span>Event</span></div></div>
+      </div>
+    </article>
+    <article class="plate">
+      <div class="pic"><img src="showroom2/event.jpg" alt="Supercars at the Sunday Brunch meet" loading="lazy"><span class="date"><b>04</b><span>OCT</span></span></div>
+      <div class="txt">
+        <p class="label">Meetup · Sun · 10:00 · Free entry</p>
+        <h3 class="heavy">Sunday <span class="it">Brunch</span></h3>
+        <div class="figs"><div><b>Free</b><span>Entry</span></div><div><b>Open</b><span>Slots</span></div><div><b>QR</b><span>Ticket</span></div></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 7. JOIN -->
+  <section class="join" id="join">
+    <div class="bg" aria-hidden="true"><img src="showroom2/hero.jpg" alt="" loading="lazy"></div>
+    <div>
+      <p class="label">Destination</p>
+      <h2 class="heavy">Join the <span class="it">convoy</span></h2>
+      <p>One free account for owners, clubs, organisers, businesses and enthusiasts. On the web and on Android.</p>
+      <div class="cta"><a class="btn" href="#join">Create free account →</a><a class="btn ghost" href="#showcase">See the collection</a></div>
+    </div>
+  </section>
+</main>
+<footer><span>KARVAAN · India's automotive community</span><span>Sample landing page · photos and videos by members</span></footer>
+
+<script>
+(() => {
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = (n, a = 0, b = 1) => Math.min(b, Math.max(a, n));
+  if (reduce) document.querySelectorAll("video[autoplay]").forEach((v) => { v.removeAttribute("autoplay"); v.pause(); });
+
+  /* ---------- showcase data (real KARVAAN cards) ---------- */
+  const machines = [
+    { img: "huracan", make: "Lamborghini", model: "Huracán", trim: "Tecnica", year: 2026, cls: "Supercar", ovr: 81, color: "#9fd630", owner: "Honey Bhatia", face: "honey",
+      specs: [["Power", "631", "HP"], ["Torque", "565", "Nm"], ["0–100", "3.2", "s"], ["Top speed", "325", "km/h"], ["Engine", "5.2L V10", ""]] },
+    { img: "panigale", make: "Ducati", model: "Panigale", trim: "V4", year: 2024, cls: "Superbike", ovr: 92, color: "#e23a2e", owner: "Honey Bhatia", face: "honey",
+      specs: [["Power", "210", "HP"], ["Torque", "123", "Nm"], ["0–100", "3.0", "s"], ["Top speed", "300", "km/h"], ["Engine", "1,103 cc", ""]] },
+    { img: "octavia", make: "Skoda", model: "Octavia", trim: "VRS", year: 2017, cls: "Sleeper", ovr: 69, color: "#3d74e0", owner: "Devang Maheshwari", face: "devang",
+      specs: [["Power", "350", "HP"], ["Torque", "550", "Nm"], ["0–100", "4.9", "s"], ["Top speed", "280", "km/h"], ["Engine", "2.0L TSI", ""]] },
+  ];
+  const slides = document.getElementById("slides"), info = document.getElementById("info");
+  machines.forEach((m, i) => {
+    slides.insertAdjacentHTML("beforeend", `
+      <div class="slide" style="--d:${i};--a:${i};--c:${m.color}">
+        <div class="shot"><img src="showroom2/${m.img}.jpg" alt="${m.year} ${m.make} ${m.model} ${m.trim}" ${i ? 'loading="lazy"' : ""}></div>
+        <div class="mirror" aria-hidden="true"><img src="showroom2/${m.img}.jpg" alt=""></div>
+      </div>`);
+    info.insertAdjacentHTML("beforeend", `
+      <div class="panel p-name" style="--d:${i};--a:${i}">
+        <p class="label">${m.make} · ${m.year}</p>
+        <h2 class="heavy">${m.model}<span class="it">${m.trim}</span></h2>
+        <div class="tag"><span class="chip glow" style="--c:${m.color}">${m.cls}</span><span class="chip">Indore</span></div>
+      </div>
+      <div class="panel p-spec" style="--d:${i};--a:${i}">
+        <div class="ovr">${m.ovr}<small>Overall</small></div>
+        <dl class="specs">${m.specs.map(([k, v, u]) => `<div><dt>${k}</dt><dd>${v}${u ? `<small>${u}</small>` : ""}</dd></div>`).join("")}</dl>
+      </div>
+      <div class="panel p-owner" style="--d:${i};--a:${i}"><img src="showroom2/${m.face}.jpg" alt=""><span><span class="label">Owner</span><br>${m.owner}</span></div>`);
+  });
+  document.getElementById("of").textContent = String(machines.length).padStart(2, "0");
+
+  const $ = (id) => document.getElementById(id);
+  const reveal = $("reveal"), showcase = $("showcase"), film = $("film"), rowsEl = $("rows"), rows = [...rowsEl.children], join = $("join");
+  const slideEls = [...slides.children], panelEls = [...info.children];
+  const ghost = $("ghost"), now = $("now"), pbar = $("pbar"), stage = showcase.querySelector(".stage");
+
+  const sceneProgress = (el) => clamp((scrollY - el.offsetTop) / Math.max(1, el.offsetHeight - innerHeight));
+  const viewProgress = (el) => { const r = el.getBoundingClientRect(); return clamp(1 - (r.top + r.height / 2) / (innerHeight + r.height / 2)); };
+
+  let target = { hp: 0, sc: 0, dp: 0, pp: 0, jp: 0 }, cur = { ...target }, active = -1;
+  function measure() {
+    target.hp = sceneProgress(reveal);
+    target.sc = sceneProgress(showcase);
+    target.dp = viewProgress(film);
+    target.pp = viewProgress(rowsEl);
+    target.jp = viewProgress(join);
+  }
+  function apply() {
+    reveal.style.setProperty("--hp", cur.hp.toFixed(4));
+    // showcase: hold each machine, then turn to the next
+    const n = machines.length, raw = cur.sc * (n - 1);
+    const base = Math.floor(raw), f = raw - base, eased = f < 0.3 ? 0 : f > 0.7 ? 1 : (f - 0.3) / 0.4;
+    const pos = Math.min(n - 1, base + (reduce ? Math.round(f) : eased));
+    const place = (el, i) => { const d = i - pos; el.style.setProperty("--d", d.toFixed(4)); el.style.setProperty("--a", Math.abs(d).toFixed(4)); };
+    slideEls.forEach(place);
+    panelEls.forEach((el, k) => place(el, Math.floor(k / 3)));
+    const idx = Math.round(pos);
+    if (idx !== active) {
+      active = idx;
+      stage.style.setProperty("--glow", machines[idx].color);
+      ghost.textContent = machines[idx].model;
+      now.textContent = String(idx + 1).padStart(2, "0");
+    }
+    pbar.style.width = (cur.sc * 100).toFixed(1) + "%";
+    film.style.setProperty("--dp", cur.dp.toFixed(3));
+    // photo wall: the two rows slide in opposite directions as you scroll
+    rows.forEach((r) => {
+      const span = Math.max(0, r.scrollWidth - innerWidth);
+      const x = r.dataset.dir === "1" ? -cur.pp * span * 0.7 : -span * 0.7 + cur.pp * span * 0.7;
+      r.style.setProperty("--x", x.toFixed(1) + "px");
+    });
+    join.style.setProperty("--jp", cur.jp.toFixed(3));
+  }
+  let running = false;
+  function tick() {
+    let moving = false;
+    for (const k in target) {
+      const d = target[k] - cur[k];
+      cur[k] = reduce || Math.abs(d) < 0.0005 ? target[k] : cur[k] + d * 0.12;
+      if (cur[k] !== target[k]) moving = true;
+    }
+    apply();
+    if (moving) requestAnimationFrame(tick); else running = false;
+  }
+  const kick = () => { measure(); if (!running) { running = true; requestAnimationFrame(tick); } };
+  addEventListener("scroll", kick, { passive: true });
+  addEventListener("resize", kick);
+  addEventListener("load", kick);
+  measure(); cur = { ...target }; apply();
+})();
+</script>

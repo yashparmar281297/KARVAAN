@@ -1,0 +1,721 @@
+<meta charset="utf-8">
+<title>KARVAAN Night Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Geist+Mono:wght@400;600&display=swap">
+<style>
+  /* Layout: a dark studio told in chapters. Three WebGL chapters pin to the
+     screen and scrolling drives them (fly-through gallery, night road with
+     billboards, turning showcase); the rest are readable panels that settle
+     into place in 3D. Every section of the KARVAAN home page is here. */
+  :root {
+    color-scheme: dark;
+    --black: #060607;    /* studio */
+    --panel: #111114;    /* raised panels */
+    --line: #f1ede41f;   /* hairlines */
+    --white: #f1ede4;    /* type */
+    --grey: #a6a39c;     /* secondary type */
+    --dim: #6f6d68;      /* captions */
+    --ember: #e4572e;    /* KARVAAN accent */
+    --glow: #9fd630;     /* current machine colour (script) */
+    --heavy: "Archivo", "Arial Black", Impact, sans-serif;
+    --serif: "Instrument Serif", "Bodoni 72", Didot, Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+    --g: clamp(16px, 4.5vw, 64px);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--black); color: var(--white); font: 400 16px/1.6 var(--sans); overflow-x: clip; }
+  a { color: inherit; text-decoration: none; }
+  img, video { max-width: 100%; display: block; }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--ember); outline-offset: 3px; }
+  .label { font: 500 11px/1.4 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--grey); margin: 0; }
+  .heavy { font-family: var(--heavy); font-stretch: 125%; font-weight: 850; text-transform: uppercase; letter-spacing: -.01em; line-height: .9; margin: 0; text-wrap: balance; }
+  .it { font-family: var(--serif); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: -.01em; }
+  .em { color: var(--ember); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 48px; padding: 0 24px; border: 0; cursor: pointer; white-space: nowrap;
+    font: 600 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; background: var(--white); color: var(--black);
+    border-radius: 99px; transition: transform .2s, background .2s, color .2s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background: #f1ede414; color: var(--white); box-shadow: inset 0 0 0 1px #f1ede440; }
+  .btn.ember { background: var(--ember); color: #fff; }
+  .btn[aria-pressed="true"] { background: var(--ember); color: #fff; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 99px; border: 1px solid #f1ede440; background: none; cursor: pointer; font: 600 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; transition: background .2s, color .2s; }
+  .chip[aria-pressed="true"] { background: var(--white); color: var(--black); border-color: var(--white); }
+  .sec-head { display: grid; gap: 14px; max-width: 760px; }
+  .sec-head h2 { font-size: clamp(2.4rem, 6vw, 5.4rem); }
+  .sec-head p:not(.label) { margin: 0; color: var(--grey); max-width: 52ch; }
+  .more { font: 600 12px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; border-bottom: 1px solid var(--white); padding-bottom: 4px; }
+
+  /* ---------- nav ---------- */
+  .nav { position: fixed; z-index: 60; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) var(--g) 14px; background: linear-gradient(#060607e6, #06060700); }
+  .logo { display: flex; align-items: center; gap: 10px; font: 850 16px/1 var(--heavy); font-stretch: 125%; letter-spacing: .06em; }
+  .links { display: flex; gap: 2px; }
+  .links a { padding: 9px 12px; font: 500 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); border-radius: 99px; transition: color .2s, background .2s; }
+  .links a:hover { color: var(--white); background: #f1ede414; }
+  .acts { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #f1ede433; background: none; display: grid; place-items: center; cursor: pointer; }
+  .acts .btn { height: 38px; padding: 0 16px; }
+  .menu-btn { display: none; }
+  @media (max-width: 1120px) { .links { display: none; } .menu-btn { display: grid; } .acts .login { display: none; } }
+  .sheet { position: fixed; inset: 0; z-index: 90; background: var(--black); padding: calc(18px + env(safe-area-inset-top, 0px)) var(--g) 24px; display: grid; align-content: start; gap: 4px; }
+  .sheet[hidden] { display: none; }
+  .sheet a { font: 850 clamp(2rem, 9vw, 3rem)/1.15 var(--heavy); font-stretch: 125%; text-transform: uppercase; }
+  .sheet .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .progress { position: fixed; z-index: 70; top: 0; left: 0; height: 2px; width: calc(var(--doc, 0) * 100%); background: var(--ember); }
+  .rail { position: fixed; z-index: 55; right: 18px; top: 50%; transform: translateY(-50%); display: grid; gap: 12px; }
+  .rail a { display: flex; align-items: center; justify-content: flex-end; gap: 10px; font: 500 10px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: transparent; transition: color .3s; }
+  .rail a::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #f1ede455; transition: background .3s, transform .3s; }
+  .rail a:hover, .rail a.on { color: var(--grey); }
+  .rail a.on::after { background: var(--ember); transform: scale(1.4); }
+  @media (max-width: 900px) { .rail { display: none; } }
+
+  /* ---------- chapters ---------- */
+  .scene { position: relative; }
+  .pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+  .gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; }
+  .overlay a, .overlay button { pointer-events: auto; }
+
+  /* 1. hero */
+  .hero { position: relative; min-height: 100svh; display: grid; align-content: end; padding: 18vh var(--g) 10vh; overflow: hidden; isolation: isolate; }
+  .hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+  .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #060607d9, #06060700 65%), linear-gradient(#06060700 55%, var(--black)); }
+  .hero h1 { font-size: clamp(3rem, 8.4vw, 8.2rem); }
+  .hero h1 .it { display: block; font-size: 1.1em; line-height: .95; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 60px); align-items: end; }
+  .hero .lede { margin: 0 0 18px; color: #f1ede4cc; max-width: 42ch; }
+  .search { display: flex; align-items: center; gap: 10px; border: 1px solid #f1ede440; background: #06060799; backdrop-filter: blur(10px); padding: 5px 5px 5px 16px; border-radius: 99px; }
+  .search input { flex: 1; min-width: 0; border: 0; background: none; height: 40px; outline: none; font-size: 16px; }
+  .search button { height: 40px; border-radius: 99px; clip-path: none; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 22px; border-top: 1px solid var(--line); }
+  .stats div { padding-top: 14px; }
+  .stats div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+  .stats b { display: block; font: 600 clamp(1.6rem, 3vw, 2.4rem)/1 var(--mono); }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+
+  /* 2. fly-through gallery */
+  #gallery { height: 420vh; }
+  .g-intro { position: absolute; left: var(--g); top: 20vh; max-width: min(640px, 86vw); opacity: calc(1 - var(--gp, 0) * 12); transform: translateY(calc(var(--gp, 0) * -200px)); }
+  .g-intro h2 { font-size: clamp(2.6rem, 7vw, 6.4rem); }
+  .g-cap { position: absolute; left: var(--g); bottom: 9vh; display: grid; gap: 6px; transition: opacity .3s; }
+  .g-cap b { font: 850 clamp(1.4rem, 3vw, 2.4rem)/1 var(--heavy); font-stretch: 125%; text-transform: uppercase; }
+  .g-count { position: absolute; right: var(--g); bottom: 9vh; font: 600 clamp(22px, 3vw, 30px)/1 var(--mono); }
+  .g-count small { font-size: 12px; color: var(--dim); }
+
+  /* 3. road + billboards (Choose your corner) */
+  #corners { height: 440vh; }
+  .c-head { position: absolute; left: var(--g); top: 14vh; max-width: min(600px, 86vw); }
+  .c-head h2 { font-size: clamp(2.2rem, 5.6vw, 5rem); }
+  .c-now { position: absolute; left: var(--g); bottom: 9vh; display: flex; align-items: flex-end; gap: 22px; flex-wrap: wrap; }
+  .c-now .idx { font: 600 clamp(40px, 6vw, 72px)/.8 var(--mono); color: var(--ember); }
+  .c-now b { display: block; font: 850 clamp(2rem, 5vw, 4rem)/.9 var(--heavy); font-stretch: 125%; text-transform: uppercase; }
+  .c-steps { position: absolute; right: var(--g); bottom: 9vh; display: flex; gap: 8px; }
+  .c-steps i { width: 26px; height: 3px; background: #f1ede433; transition: background .3s; }
+  .c-steps i.on { background: var(--ember); }
+
+  /* 4. showcase (Featured vehicles) */
+  #featured { height: 380vh; }
+  .stage-bg { position: absolute; inset: 0; background: radial-gradient(45% 45% at 50% 52%, color-mix(in srgb, var(--glow) 32%, transparent), transparent 72%), var(--black); transition: background .8s; }
+  .ghost-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -58%); white-space: nowrap; font: 900 clamp(4.5rem, 19vw, 19rem)/1 var(--heavy); font-stretch: 125%; text-transform: uppercase; color: transparent; -webkit-text-stroke: 1px #f1ede42a; }
+  .f-head { position: absolute; left: var(--g); top: 12vh; right: var(--g); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  .f-head h2 { font-size: clamp(1.8rem, 3.6vw, 3rem); }
+  .f-filter { display: flex; gap: 8px; flex-wrap: wrap; }
+  .f-info { position: absolute; left: var(--g); bottom: 9vh; max-width: min(340px, 42vw); transition: opacity .35s, transform .35s; }
+  .f-info.swap { opacity: 0; transform: translateY(12px); }
+  .f-info h3 { font: 850 clamp(2rem, 4.4vw, 4rem)/.9 var(--heavy); font-stretch: 125%; text-transform: uppercase; margin: 8px 0 0; }
+  .f-info h3 .it { display: block; font-size: .8em; color: var(--grey); }
+  .f-own { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  .f-own img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+  .f-spec { position: absolute; right: var(--g); bottom: 9vh; width: min(260px, 36vw); text-align: right; transition: opacity .35s; }
+  .f-spec.swap { opacity: 0; }
+  .ovr { font: 850 clamp(3.4rem, 6.4vw, 6rem)/.85 var(--heavy); font-stretch: 125%; }
+  .ovr small { display: block; font: 500 11px/1 var(--mono); letter-spacing: .24em; color: var(--grey); margin-top: 8px; }
+  .specs { margin: 18px 0 0; }
+  .specs div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .specs dt { font: 500 10px/1.4 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+  .specs dd { margin: 0; font: 600 17px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .specs dd small { font-size: .62em; color: var(--dim); margin-left: 4px; font-weight: 400; }
+  .like { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; cursor: pointer; font: 600 13px/1 var(--mono); padding: 6px 0; }
+  .like svg { width: 18px; height: 18px; }
+  .like[aria-pressed="true"] svg { fill: var(--ember); stroke: var(--ember); }
+  @media (max-width: 760px) {
+    .f-info { max-width: none; right: var(--g); bottom: 22vh; }
+    .f-spec { left: var(--g); right: var(--g); width: auto; bottom: 6vh; text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: end; }
+    .ovr { font-size: 2.8rem; }
+    .specs { margin: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+    .specs div { padding: 6px 0; }
+  }
+
+  /* panels that settle into place */
+  .panel { --e: 1; overflow-x: clip; }
+  .biz, .cta { overflow-x: clip; }
+  .settle { transform: perspective(1400px) rotateX(calc((1 - var(--e)) * 20deg)) translateY(calc((1 - var(--e)) * 60px)); opacity: calc(.2 + var(--e) * .8); transform-origin: 50% 0; }
+
+  /* 5. clubs */
+  .clubs { padding: 16vh var(--g) 10vh; display: grid; gap: 6vh; }
+  .club { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); border-radius: 22px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); }
+  .club .pic { position: relative; min-height: 380px; overflow: hidden; }
+  .club .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(calc(1.25 - var(--e) * .25)); }
+  .club .txt { padding: clamp(22px, 3.4vw, 44px); display: grid; gap: 18px; align-content: center; }
+  .crest { display: flex; align-items: center; gap: 14px; }
+  .crest img { width: 66px; height: 66px; border-radius: 50%; }
+  .club h3 { font-size: clamp(1.9rem, 3.4vw, 3rem); }
+  .club .tag { font: 400 clamp(1.3rem, 2vw, 1.7rem)/1.2 var(--serif); font-style: italic; }
+  .club p { margin: 0; color: var(--grey); }
+  .figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+  .figs div { padding-top: 14px; }
+  .figs div + div { padding-left: 16px; border-left: 1px solid var(--line); }
+  .figs b { display: block; font: 600 clamp(1.4rem, 2.6vw, 2rem)/1 var(--mono); }
+  .figs span { font: 500 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+  .faces { display: flex; align-items: center; gap: 12px; }
+  .faces img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 3px solid var(--panel); margin-left: -12px; }
+  .faces img:first-child { margin-left: 0; }
+  .row-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  @media (max-width: 860px) { .club { grid-template-columns: 1fr; } .club .pic { min-height: 0; aspect-ratio: 16 / 9; } }
+
+  /* 6. events */
+  .events { padding: 10vh var(--g); display: grid; gap: 6vh; }
+  .ticket { display: grid; grid-template-columns: minmax(0, 1.3fr) 26px minmax(0, 1fr); border-radius: 22px; overflow: hidden; background: #f4f0e6; color: #121212;
+    transform: perspective(1300px) rotateX(calc((1 - var(--e)) * -60deg)); transform-origin: 50% 0; opacity: calc(.2 + var(--e) * .8); }
+  .ticket .pic { position: relative; min-height: 320px; }
+  .ticket .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ticket .date { position: absolute; top: 16px; left: 16px; background: #f4f0e6; border-radius: 12px; padding: 10px 14px; text-align: center; line-height: 1; }
+  .ticket .date b { display: block; font: 850 2.4rem/1 var(--heavy); font-stretch: 125%; }
+  .ticket .date span { font: 600 10px/1 var(--mono); letter-spacing: .14em; color: var(--ember); }
+  .perf { background: radial-gradient(circle at 50% 0, var(--black) 12px, transparent 13px), radial-gradient(circle at 50% 100%, var(--black) 12px, transparent 13px); position: relative; }
+  .perf::after { content: ""; position: absolute; top: 20px; bottom: 20px; left: 50%; border-left: 2px dashed #12121230; }
+  .ticket .txt { padding: clamp(20px, 3vw, 36px); display: grid; gap: 14px; align-content: center; }
+  .ticket h3 { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+  .ticket .label { color: #6b675e; }
+  .ticket .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+  .ticket .meta b { display: block; font-weight: 600; }
+  .ticket .btn { background: #121212; color: #f4f0e6; }
+  .ticket .btn[aria-pressed="true"] { background: var(--ember); color: #fff; }
+  @media (max-width: 860px) { .ticket { grid-template-columns: 1fr; } .ticket .pic { min-height: 0; aspect-ratio: 16 / 9; } .perf { height: 26px; background: radial-gradient(circle at 0 50%, var(--black) 12px, transparent 13px), radial-gradient(circle at 100% 50%, var(--black) 12px, transparent 13px); } .perf::after { top: 50%; bottom: auto; left: 20px; right: 20px; border-left: 0; border-top: 2px dashed #12121230; } }
+
+  /* 7. businesses */
+  .biz { padding: 10vh var(--g); display: grid; gap: 6vh; }
+  .biz-grid { display: grid; grid-template-columns: 1fr 1fr 1.6fr; grid-template-rows: auto auto; gap: clamp(10px, 1.6vw, 18px); perspective: 1400px; }
+  .biz-grid > * { position: relative; border-radius: 18px; overflow: hidden; background: var(--panel); margin: 0; min-width: 0; }
+  .vclip { grid-row: span 2; aspect-ratio: 9 / 16; transform: translateY(calc((var(--m, .5) - .5) * var(--sp) * 80px)); }
+  .vclip video, .biz-grid img { width: 100%; height: 100%; object-fit: cover; }
+  .biz-card { padding: clamp(20px, 3vw, 34px); display: grid; align-content: space-between; gap: 20px; border: 1px solid var(--line); }
+  .biz-card .brand { display: flex; align-items: center; gap: 14px; }
+  .biz-card .brand img { width: 54px; height: 54px; border-radius: 12px; }
+  .biz-card h3 { font-size: clamp(1.8rem, 3.4vw, 3rem); }
+  .biz-card p { margin: 0; color: var(--grey); }
+  .biz-photo { aspect-ratio: 16 / 10; }
+  @media (max-width: 900px) { .biz-grid { grid-template-columns: 1fr 1fr; } .biz-card, .biz-photo { grid-column: span 2; } .vclip { grid-row: auto; } }
+
+  /* 8. final CTA */
+  .cta { position: relative; padding: 16vh var(--g); display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: clamp(24px, 5vw, 70px); align-items: center; overflow: hidden; }
+  .cta h2 { font-size: clamp(2.8rem, 7.4vw, 7rem); }
+  .cta p { color: var(--grey); max-width: 46ch; margin: 0; }
+  .fan { position: relative; height: clamp(300px, 36vw, 480px); perspective: 1200px; }
+  .fan img { position: absolute; top: 0; left: 50%; width: 52%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 18px; box-shadow: 0 30px 60px -20px #000;
+    transform: translateX(-50%) translateX(calc(var(--d) * var(--m, 1) * 70%)) rotate(calc(var(--d) * var(--m, 1) * 9deg)) rotateY(calc(var(--d) * var(--m, 1) * -20deg)); transform-origin: 50% 120%; }
+  @media (max-width: 860px) { .cta { grid-template-columns: 1fr; } }
+  footer { padding: 40px var(--g) calc(30px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 28px; color: var(--grey); font-size: 14px; }
+  footer h4 { margin: 0 0 12px; font: 500 11px/1.4 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--white); }
+  footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  @media (max-width: 760px) { footer { grid-template-columns: 1fr 1fr; } footer > div:first-child { grid-column: span 2; } }
+
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 160%); background: var(--white); color: var(--black); padding: 12px 18px; border-radius: 99px; font-weight: 500; font-size: 14px; z-index: 95; transition: transform .35s; max-width: calc(100vw - 32px); text-align: center; }
+  .toast.on { transform: translate(-50%, 0); }
+
+  /* no WebGL: chapters become plain sections with a photo grid */
+  .fallback { display: none; }
+  .no-gl .scene { height: auto !important; }
+  .no-gl .pin { position: relative; height: auto; min-height: 0; padding: 14vh var(--g) 6vh; overflow: visible; }
+  .no-gl .gl, .no-gl .ghost-name, .no-gl .g-cap, .no-gl .g-count, .no-gl .c-now, .no-gl .c-steps { display: none; }
+  .no-gl .overlay, .no-gl .g-intro, .no-gl .c-head, .no-gl .f-head, .no-gl .f-info, .no-gl .f-spec { position: relative; inset: auto; left: auto; right: auto; top: auto; bottom: auto; opacity: 1; max-width: none; width: auto; text-align: left; margin-bottom: 20px; }
+  .no-gl .fallback { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+  .fallback img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; }
+
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+</style>
+
+<div class="progress" aria-hidden="true"></div>
+<header class="nav">
+  <a class="logo" href="#top" aria-label="KARVAAN home"><svg width="31" height="21" viewBox="0 0 36 24" aria-hidden="true"><path d="M2 3h6l8 9-8 9H2l8-9Z" fill="#f1ede4"/><path d="M13 3h5l8 9-8 9h-5l8-9Z" fill="#f1ede4" opacity=".55"/><path d="M23 3h4l8 9-8 9h-4l8-9Z" fill="#e4572e"/></svg>KARVAAN</a>
+  <nav class="links" aria-label="Main"><a href="#gallery">Explore</a><a href="#featured" data-pick="car">Cars</a><a href="#featured" data-pick="bike">Bikes</a><a href="#clubs">Clubs</a><a href="#events">Events</a><a href="#business">Businesses</a></nav>
+  <div class="acts">
+    <button class="icon-btn" type="button" aria-label="Search" id="searchBtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+    <a class="btn ghost login" href="#join">Login</a>
+    <a class="btn" href="#join">Join</a>
+    <button class="icon-btn menu-btn" type="button" id="menuBtn" aria-label="Open menu" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </div>
+</header>
+<div class="sheet" id="sheet" hidden>
+  <div class="row"><span class="logo">KARVAAN</span><button class="icon-btn" type="button" id="menuClose" aria-label="Close menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <a href="#gallery">Explore</a><a href="#featured" data-pick="car">Cars</a><a href="#featured" data-pick="bike">Bikes</a><a href="#clubs">Clubs</a><a href="#events">Events</a><a href="#business">Businesses</a>
+  <div class="row-btns" style="margin-top:22px"><a class="btn ghost" href="#join">Login</a><a class="btn ember" href="#join">Join free</a></div>
+</div>
+<nav class="rail" aria-label="Chapters">
+  <a href="#top" data-ch="top">Start</a><a href="#gallery" data-ch="gallery">Community</a><a href="#corners" data-ch="corners">Corners</a><a href="#featured" data-ch="featured">Vehicles</a>
+  <a href="#clubs" data-ch="clubs">Clubs</a><a href="#events" data-ch="events">Events</a><a href="#business" data-ch="business">Businesses</a><a href="#join" data-ch="join">Join</a>
+</nav>
+
+<main id="top">
+  <!-- 1. HERO -->
+  <section class="hero" data-ch-sec="top">
+    <video src="showroom2/reveal.mp4" poster="showroom2/reveal.jpg" autoplay muted loop playsinline aria-label="Car headlights switching on in a dark studio"></video>
+    <div class="hero-grid">
+      <div>
+        <p class="label">Cars · Bikes · Clubs · Events</p>
+        <h1 class="heavy" style="margin-top:14px">India's<span class="it">automotive</span>community</h1>
+      </div>
+      <div>
+        <p class="lede">Owners show their machines as collectible cards. Clubs find members and run their drives. Everyone else follows along. One free account.</p>
+        <form class="search" id="searchForm" role="search">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" placeholder="Search cars, bikes, clubs, events…" aria-label="Search KARVAAN" enterkeyhint="search">
+          <button class="btn" type="submit">Search</button>
+        </form>
+        <div class="stats"><div><b>06</b><span class="label">Members</span></div><div><b>03</b><span class="label">Vehicles</span></div><div><b>01</b><span class="label">Club</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. FLY-THROUGH GALLERY -->
+  <section class="scene" id="gallery" data-ch-sec="gallery" aria-label="The community">
+    <div class="pin">
+      <canvas class="gl" id="glGallery" aria-hidden="true"></canvas>
+      <div class="overlay">
+        <div class="g-intro"><p class="label">The community</p><h2 class="heavy" style="margin-top:12px">Every machine<br>has a <span class="it em">story</span></h2><p style="color:var(--grey);max-width:44ch">Scroll to fly through photos shared by KARVAAN owners, clubs and businesses.</p></div>
+        <div class="g-cap" id="gCap"><span class="label" id="gKind">Owner</span><b id="gName">Honey Bhatia</b></div>
+        <div class="g-count"><span id="gNum">01</span> <small>/ <span id="gTot">12</span></small></div>
+        <div class="fallback" id="fbGallery"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CHOOSE YOUR CORNER (night road + billboards) -->
+  <section class="scene" id="corners" data-ch-sec="corners" aria-label="Choose your corner">
+    <div class="pin">
+      <canvas class="gl" id="glRoad" aria-hidden="true"></canvas>
+      <div class="overlay">
+        <div class="c-head"><p class="label">Explore</p><h2 class="heavy" style="margin-top:12px">Choose your<br><span class="it em">corner</span> of the culture</h2></div>
+        <div class="c-now"><span class="idx" id="cIdx">01</span><div><span class="label" id="cCount">2 cars</span><b id="cTitle">Supercars</b></div><a class="btn ghost" id="cGo" href="#featured">Open</a></div>
+        <div class="c-steps" id="cSteps"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="fallback" id="fbCorners"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. FEATURED VEHICLES (turning showcase) -->
+  <section class="scene" id="featured" data-ch-sec="featured" aria-label="Featured vehicles">
+    <div class="pin">
+      <div class="stage-bg" id="stageBg"></div>
+      <div class="ghost-name" id="ghost" aria-hidden="true">Huracán</div>
+      <canvas class="gl" id="glShow" aria-hidden="true"></canvas>
+      <div class="overlay">
+        <div class="f-head">
+          <div><p class="label">The collection</p><h2 class="heavy" style="margin-top:10px">Featured <span class="it em">vehicles</span></h2></div>
+          <div class="f-filter" role="group" aria-label="Filter vehicles">
+            <button class="chip" type="button" data-filter="all" aria-pressed="true">All 3</button>
+            <button class="chip" type="button" data-filter="car" aria-pressed="false">Cars 2</button>
+            <button class="chip" type="button" data-filter="bike" aria-pressed="false">Bikes 1</button>
+          </div>
+        </div>
+        <div class="f-info" id="fInfo"></div>
+        <div class="f-spec" id="fSpec"></div>
+        <div class="fallback" id="fbShow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CLUBS -->
+  <section class="clubs panel" id="clubs" data-ch-sec="clubs" data-e>
+    <div class="sec-head" style="display:flex;justify-content:space-between;align-items:end;max-width:none;flex-wrap:wrap">
+      <div style="display:grid;gap:14px"><p class="label">Clubs</p><h2 class="heavy">Clubs that<br>own the <span class="it em">road</span></h2></div>
+      <a class="more" href="#clubs">Club directory →</a>
+    </div>
+    <article class="club settle">
+      <div class="pic"><img src="showroom2/club-convoy.jpg" alt="Porsche Taycan and Lamborghini Huracán driving together" loading="lazy"></div>
+      <div class="txt">
+        <div class="crest"><img src="showroom2/club-logo.jpg" alt="Malwa Supercars Club logo"><div><p class="label">Supercar club · Indore, MP</p><h3 class="heavy" style="margin-top:6px">Malwa Supercar Club</h3></div></div>
+        <p class="tag">Central India's Supercar Family</p>
+        <p>MSC brings together car enthusiasts, collectors and drivers who share a passion for high-performance cars.</p>
+        <div class="figs"><div><b data-count="15" data-suffix="+">15+</b><span>Members</span></div><div><b data-count="20" data-suffix="+">20+</b><span>Vehicles</span></div><div><b data-count="2015" data-from="1990">2015</b><span>Founded</span></div></div>
+        <div class="faces"><img src="showroom2/honey.jpg" alt="Honey Bhatia"><img src="showroom2/devang.jpg" alt="Devang Maheshwari"><span class="label">+13 members</span></div>
+        <div class="row-btns"><button class="btn" type="button" id="follow" aria-pressed="false">Follow</button><button class="btn ghost" type="button" id="joinClub" aria-pressed="false">Request to join</button></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 6. EVENTS -->
+  <section class="events panel" id="events" data-ch-sec="events" data-e>
+    <div class="sec-head" style="display:flex;justify-content:space-between;align-items:end;max-width:none;flex-wrap:wrap">
+      <div style="display:grid;gap:14px"><p class="label">Events</p><h2 class="heavy">Where the<br>community <span class="it em">meets</span></h2></div>
+      <a class="more" href="#events">All events →</a>
+    </div>
+    <article class="ticket">
+      <div class="pic"><img src="showroom2/event.jpg" alt="Supercars arriving at the Sunday Brunch meet" loading="lazy"><span class="date"><b>04</b><span>OCT · SUN</span></span></div>
+      <div class="perf" aria-hidden="true"></div>
+      <div class="txt">
+        <p class="label">Meetup · Hosted by Malwa Supercar Club</p>
+        <h3 class="heavy">Sunday <span class="it">Brunch</span></h3>
+        <div class="meta"><div><span class="label">Venue</span><b>Bellumi, Indore</b></div><div><span class="label">Time</span><b>10:00 AM</b></div><div><span class="label">Entry</span><b>Free</b></div><div><span class="label">Slots</span><b>Open entry</b></div></div>
+        <div><button class="btn" type="button" id="reg" aria-pressed="false">Reserve free spot</button></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 7. BUSINESSES -->
+  <section class="biz" id="business" data-ch-sec="business">
+    <div class="sec-head" style="display:flex;justify-content:space-between;align-items:end;max-width:none;flex-wrap:wrap">
+      <div style="display:grid;gap:14px"><p class="label">Businesses</p><h2 class="heavy">Trusted by<br>the <span class="it em">garage</span></h2></div>
+      <a class="more" href="#business">Directory →</a>
+    </div>
+    <div class="biz-grid" data-m>
+      <figure class="vclip" style="--sp:1"><video src="showroom2/ag7-grille.mp4" poster="showroom2/ag7-grille.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Close-up of a BMW grille"></video></figure>
+      <figure class="vclip" style="--sp:-1"><video src="showroom2/ag7-badge.mp4" poster="showroom2/ag7-badge.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Close-up of a Ferrari badge"></video></figure>
+      <div class="biz-card">
+        <div class="brand"><img src="showroom2/ag7-logo.jpg" alt="AG7 Cars logo"><div><p class="label">Luxury dealership · Palasia, Indore</p><h3 class="heavy" style="margin-top:6px">AG7 <span class="it">Cars</span></h3></div></div>
+        <p>Exclusive deals on brand new and pre-owned supercars and premium luxury cars. Every car selected and inspected.</p>
+        <div class="row-btns"><button class="btn" type="button" id="followBiz" aria-pressed="false">Follow</button><span class="chip" style="cursor:default">New listing</span></div>
+      </div>
+      <figure class="biz-photo"><img src="showroom2/ag7-cullinan.jpg" alt="Rolls-Royce Cullinan in the AG7 Cars showroom" loading="lazy"></figure>
+    </div>
+  </section>
+
+  <!-- 8. FINAL CTA -->
+  <section class="cta" id="join" data-ch-sec="join">
+    <div style="display:grid;gap:22px">
+      <p class="label em">Your turn</p>
+      <h2 class="heavy">Build your <span class="it em">automotive</span> identity</h2>
+      <p>Add your cars and bikes, request to join your club, follow the people you love and register for drives. You decide who sees your name, your face and your city.</p>
+      <div class="row-btns"><a class="btn ember" href="#top">Join free</a><a class="btn ghost" href="#featured">Your garage</a></div>
+    </div>
+    <div class="fan" data-m aria-hidden="true"><img src="showroom2/huracan.jpg" alt="" style="--d:-1" loading="lazy"><img src="showroom2/octavia.jpg" alt="" style="--d:1" loading="lazy"><img src="showroom2/panigale.jpg" alt="" style="--d:0" loading="lazy"></div>
+  </section>
+</main>
+<footer>
+  <div><span class="logo">KARVAAN</span><p style="margin:12px 0 0;max-width:34ch">Cars. Bikes. Clubs. Events. The digital home of India's automotive culture.</p></div>
+  <div><h4>Discover</h4><ul><li><a href="#featured" data-pick="car">Cars</a></li><li><a href="#featured" data-pick="bike">Bikes</a></li><li><a href="#events">Drives &amp; rides</a></li></ul></div>
+  <div><h4>Community</h4><ul><li><a href="#clubs">Clubs</a></li><li><a href="#events">Events</a></li><li><a href="#business">Businesses</a></li></ul></div>
+  <div><h4>You</h4><ul><li><a href="#join">Your garage</a></li><li><a href="#join">Join</a></li><li><a href="#join">Login</a></li></ul></div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clamp = (n, a = 0, b = 1) => Math.min(b, Math.max(a, n));
+  const small = () => innerWidth < 760;
+  const toast = (t) => { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); };
+  if (reduce) document.querySelectorAll("video[autoplay]").forEach((v) => { v.removeAttribute("autoplay"); v.pause(); });
+
+  /* ---------------- data (real KARVAAN content) ---------------- */
+  const PHOTOS = [
+    ["honey", .8, "Owner", "Honey Bhatia"], ["club-convoy", .8, "Club", "Malwa Supercars Club"], ["devang", .8, "Owner", "Devang Maheshwari"],
+    ["tile-supercars", .8, "Supercars", "Porsche 911 GT3 RS"], ["ag7-cullinan", 1.778, "Business", "AG7 Cars · Cullinan"], ["octavia-2", .8, "Sleeper", "Skoda Octavia VRS"],
+    ["tile-superbikes", 1.5, "Superbikes", "On the limit"], ["event", 1.778, "Event", "Sunday Brunch"], ["ag7-delivery", .8, "Business", "AG7 Cars · Ferrari delivery"],
+    ["tile-events", .667, "Events", "Line-up"], ["hero", .8, "Meets", "Cars & bikes"], ["club", 1.778, "Club", "Malwa Supercar Club"],
+  ];
+  const CORNERS = [
+    ["tile-supercars", .8, "Supercars", "2 cars", "#featured", "car"], ["tile-superbikes", 1.5, "Superbikes", "1 bike", "#featured", "bike"],
+    ["club", 1.778, "Clubs", "1 club", "#clubs", ""], ["tile-events", .667, "Events", "Meets & drives", "#events", ""],
+  ];
+  const V = [
+    { img: "huracan", kind: "car", make: "Lamborghini", model: "Huracán", trim: "Tecnica", year: 2026, cls: "Supercar", ovr: 81, color: "#9fd630", owner: "Honey Bhatia", face: "honey", likes: 2,
+      s: [["Power", "631", "HP"], ["Torque", "565", "Nm"], ["0–100", "3.2", "s"], ["Top speed", "325", "km/h"]] },
+    { img: "panigale", kind: "bike", make: "Ducati", model: "Panigale", trim: "V4", year: 2024, cls: "Superbike", ovr: 92, color: "#e23a2e", owner: "Honey Bhatia", face: "honey", likes: 1,
+      s: [["Power", "210", "HP"], ["Torque", "123", "Nm"], ["0–100", "3.0", "s"], ["Top speed", "300", "km/h"]] },
+    { img: "octavia", kind: "car", make: "Skoda", model: "Octavia", trim: "VRS", year: 2017, cls: "Sleeper", ovr: 69, color: "#3d74e0", owner: "Devang Maheshwari", face: "devang", likes: 3,
+      s: [["Power", "350", "HP"], ["Torque", "550", "Nm"], ["0–100", "4.9", "s"], ["Top speed", "280", "km/h"]] },
+  ];
+  const src = (n) => `showroom2/${n}.jpg`;
+
+  /* ---------------- UI basics ---------------- */
+  const sheet = $("sheet"), mb = $("menuBtn");
+  const setMenu = (o) => { sheet.hidden = !o; mb.setAttribute("aria-expanded", String(o)); document.documentElement.style.overflow = o ? "hidden" : ""; };
+  mb.addEventListener("click", () => setMenu(true));
+  $("menuClose").addEventListener("click", () => setMenu(false));
+  sheet.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setMenu(false)));
+  $("searchBtn").addEventListener("click", () => { scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); setTimeout(() => $("q").focus(), 300); });
+  $("searchForm").addEventListener("submit", (e) => { e.preventDefault(); const q = $("q").value.trim(); toast(q ? `Searching KARVAAN for “${q}”` : "Type a make, a city or a club"); });
+  const toggle = (id, onTxt, offTxt, msg) => $(id).addEventListener("click", (e) => {
+    const b = e.currentTarget, on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", String(on)); b.textContent = on ? onTxt : offTxt; if (on) toast(msg);
+  });
+  toggle("follow", "Following ✓", "Follow", "Following Malwa Supercar Club. Its drives will show in your feed.");
+  toggle("joinClub", "Request sent ✓", "Request to join", "Request sent. The club admin will review it.");
+  toggle("reg", "You're in · QR ready", "Reserve free spot", "Spot reserved for Sunday Brunch.");
+  toggle("followBiz", "Following ✓", "Follow", "Following AG7 CARS.");
+
+  /* ---------------- showcase info panel + filter ---------------- */
+  const heart = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>`;
+  const liked = new Set();
+  let list = [0, 1, 2], shown = -1;
+  function showInfo(vi) {
+    if (vi === shown) return;
+    shown = vi;
+    const v = V[vi], info = $("fInfo"), spec = $("fSpec");
+    info.classList.add("swap"); spec.classList.add("swap");
+    setTimeout(() => {
+      info.innerHTML = `<p class="label">${v.make} · ${v.year} · <span style="color:${v.color}">${v.cls}</span></p><h3>${v.model}<span class="it">${v.trim}</span></h3>
+        <div class="f-own"><img src="${src(v.face)}" alt=""><span><span class="label">Owner</span><br>${v.owner}</span>
+        <button class="like" type="button" aria-pressed="${liked.has(vi)}" aria-label="Like ${v.model}" data-vi="${vi}" style="margin-left:auto">${heart}<span>${v.likes + (liked.has(vi) ? 1 : 0)}</span></button></div>`;
+      spec.innerHTML = `<div class="ovr">${v.ovr}<small>Overall</small></div><dl class="specs">${v.s.map(([k, n, u]) => `<div><dt>${k}</dt><dd>${n}<small>${u}</small></dd></div>`).join("")}</dl>`;
+      info.classList.remove("swap"); spec.classList.remove("swap");
+      $("stageBg").style.setProperty("--glow", v.color);
+      $("ghost").textContent = v.model;
+    }, reduce ? 0 : 180);
+  }
+  $("fInfo").addEventListener("click", (e) => {
+    const b = e.target.closest(".like"); if (!b) return;
+    const vi = Number(b.dataset.vi), on = !liked.has(vi);
+    on ? liked.add(vi) : liked.delete(vi);
+    b.setAttribute("aria-pressed", String(on)); b.querySelector("span").textContent = V[vi].likes + (on ? 1 : 0);
+  });
+  function setFilter(f) {
+    document.querySelectorAll("[data-filter]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.filter === f)));
+    list = V.map((_, i) => i).filter((i) => f === "all" || V[i].kind === f);
+    shown = -1;
+  }
+  document.querySelectorAll("[data-filter]").forEach((b) => b.addEventListener("click", () => setFilter(b.dataset.filter)));
+  document.querySelectorAll("[data-pick]").forEach((a) => a.addEventListener("click", () => setFilter(a.dataset.pick)));
+  showInfo(0);
+
+  /* ---------------- count-up ---------------- */
+  const counters = [...document.querySelectorAll("[data-count]")];
+  let counted = false;
+  function countUp() {
+    counted = true; const t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / 1200), ease = 1 - Math.pow(1 - k, 3);
+      counters.forEach((c) => { const a = Number(c.dataset.from || 0), b = Number(c.dataset.count); c.textContent = Math.round(a + (b - a) * ease) + (c.dataset.suffix || ""); });
+      if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+
+  /* ---------------- WebGL ---------------- */
+  const glOK = (() => { try { const c = document.createElement("canvas"); return !!window.THREE && !!(c.getContext("webgl") || c.getContext("experimental-webgl")); } catch (e) { return false; } })();
+  if (!glOK) {
+    document.documentElement.classList.add("no-gl");
+    $("fbGallery").innerHTML = PHOTOS.map(([n, , , t]) => `<img src="${src(n)}" alt="${t}" loading="lazy">`).join("");
+    $("fbCorners").innerHTML = CORNERS.map(([n, , t, c, h]) => `<a href="${h}"><img src="${src(n)}" alt="${t}" loading="lazy"><b class="heavy" style="display:block;margin-top:8px">${t}</b><span class="label">${c}</span></a>`).join("");
+    $("fbShow").innerHTML = V.map((v) => `<img src="${src(v.img)}" alt="${v.make} ${v.model}" loading="lazy">`).join("");
+  }
+
+  const stages = [];
+  const loader = glOK ? new THREE.TextureLoader() : null;
+  function makeStage(canvas, { alpha = false, fog = null, fov = 55 } = {}) {
+    const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha, powerPreference: "high-performance" });
+    r.setPixelRatio(Math.min(devicePixelRatio, small() ? 1.5 : 2));
+    r.outputEncoding = THREE.sRGBEncoding;
+    alpha ? r.setClearColor(0x000000, 0) : r.setClearColor(0x060607, 1);
+    const scene = new THREE.Scene();
+    if (fog) scene.fog = new THREE.Fog(0x060607, fog[0], fog[1]);
+    const cam = new THREE.PerspectiveCamera(fov, 1, 0.1, 500);
+    const st = { r, scene, cam, canvas, size() { const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); } };
+    stages.push(st);
+    return st;
+  }
+  // A photo on a plane, cropped to cover it — the photo itself is never recoloured.
+  function photo(name, w, h, { fog = true } = {}) {
+    const mat = new THREE.MeshBasicMaterial({ color: 0x15151a, transparent: true, fog, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
+    loader.load(src(name), (t) => {
+      t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
+      const ia = t.image.width / t.image.height, pa = w / h;
+      if (ia > pa) { t.repeat.set(pa / ia, 1); t.offset.set((1 - pa / ia) / 2, 0); } else { t.repeat.set(1, ia / pa); t.offset.set(0, (1 - ia / pa) / 2); }
+      mat.map = t; mat.color.set(0xffffff); mat.needsUpdate = true;
+    });
+    return mesh;
+  }
+  const glowTex = glOK ? (() => {
+    const c = document.createElement("canvas"); c.width = c.height = 128;
+    const g = c.getContext("2d"), grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, "rgba(255,255,255,1)"); grd.addColorStop(.25, "rgba(255,255,255,.5)"); grd.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  })() : null;
+
+  const sceneP = (el) => clamp((scrollY - el.offsetTop) / Math.max(1, el.offsetHeight - innerHeight));
+  const visible = (el) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; };
+
+  let gallery, road, show;
+  if (glOK) {
+    /* ---- A. fly-through gallery ---- */
+    gallery = makeStage($("glGallery"), { fog: [6, 46], fov: 60 });
+    const gMeshes = [];
+    const dust = (() => {
+      const n = small() ? 250 : 600, geo = new THREE.BufferGeometry(), pos = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) { pos[i * 3] = (Math.random() - .5) * 24; pos[i * 3 + 1] = (Math.random() - .5) * 14; pos[i * 3 + 2] = -Math.random() * 130; }
+      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const p = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xf1ede4, size: .05, transparent: true, opacity: .6 }));
+      gallery.scene.add(p); return p;
+    })();
+    PHOTOS.forEach(([n, a, kind, title], i) => {
+      const h = 3.1, w = Math.min(5.4, h * a);
+      const m = photo(n, w, h);
+      const side = i % 2 ? 1 : -1;
+      m.userData = { side, kind, title, z: -22 - i * 9 };
+      gallery.scene.add(m); gMeshes.push(m);
+    });
+    $("gTot").textContent = String(PHOTOS.length).padStart(2, "0");
+    const gLast = gMeshes[gMeshes.length - 1].userData.z;
+    let gCur = 0, gShown = -1;
+    gallery.update = (t) => {
+      const target = sceneP($("gallery"));
+      gCur += (target - gCur) * (reduce ? 1 : .1);
+      $("gallery").style.setProperty("--gp", gCur.toFixed(4));
+      const camZ = 6 + (gLast - 4) * gCur, spread = small() ? 1.55 : 3.1;
+      gallery.cam.position.set(Math.sin(gCur * 6) * .5, Math.cos(gCur * 4) * .25, camZ);
+      gallery.cam.lookAt(0, 0, camZ - 10);
+      let near = 0, best = 1e9;
+      gMeshes.forEach((m, i) => {
+        const u = m.userData, d = u.z - camZ;
+        m.position.set(u.side * spread + Math.sin(i * 1.7) * .4, Math.sin(i * 2.3) * .7 + (reduce ? 0 : Math.sin(t * .6 + i) * .08), u.z);
+        m.rotation.y = -u.side * .28;
+        m.material.opacity = clamp((-d - 2.5) / 4);
+        if (d < -2 && -d < best) { best = -d; near = i; }
+      });
+      if (near !== gShown) { gShown = near; $("gKind").textContent = gMeshes[near].userData.kind; $("gName").textContent = gMeshes[near].userData.title; $("gNum").textContent = String(near + 1).padStart(2, "0"); }
+      dust.rotation.z = gCur * .6;
+    };
+
+    /* ---- B. night road with billboards ---- */
+    road = makeStage($("glRoad"), { fog: [16, 130], fov: 58 });
+    road.scene.add(new THREE.HemisphereLight(0x9aa3b5, 0x060607, .55));
+    const key = new THREE.DirectionalLight(0xffe2c4, .6); key.position.set(-6, 10, 4); road.scene.add(key);
+    const L = 260, Z0 = 8;
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, L + 120), new THREE.MeshLambertMaterial({ color: 0x08080a })); ground.rotation.x = -Math.PI / 2; ground.position.set(0, -.02, Z0 - L / 2); road.scene.add(ground);
+    const asphalt = new THREE.Mesh(new THREE.PlaneGeometry(14, L + 60), new THREE.MeshLambertMaterial({ color: 0x141417 })); asphalt.rotation.x = -Math.PI / 2; asphalt.position.set(0, 0, Z0 - L / 2); road.scene.add(asphalt);
+    const m4 = new THREE.Matrix4(), dashN = Math.floor(L / 7);
+    const dashes = new THREE.InstancedMesh(new THREE.BoxGeometry(.16, .02, 2.6), new THREE.MeshBasicMaterial({ color: 0xcfcac0 }), dashN * 2);
+    for (let i = 0; i < dashN; i++) { m4.makeTranslation(-2.3, .01, Z0 - i * 7); dashes.setMatrixAt(i * 2, m4); m4.makeTranslation(2.3, .01, Z0 - i * 7); dashes.setMatrixAt(i * 2 + 1, m4); }
+    road.scene.add(dashes);
+    [-6.8, 6.8].forEach((x) => { const e = new THREE.Mesh(new THREE.BoxGeometry(.12, .02, L + 60), new THREE.MeshBasicMaterial({ color: 0x8a8780 })); e.position.set(x, .01, Z0 - L / 2); road.scene.add(e); });
+    const glowMat = new THREE.SpriteMaterial({ map: glowTex, color: 0xffd9a8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    const poolMat = new THREE.MeshBasicMaterial({ map: glowTex, color: 0x4a3c2c, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    const poleMat = new THREE.MeshLambertMaterial({ color: 0x1c1c20 }), poleGeo = new THREE.CylinderGeometry(.07, .09, 7.5, 6);
+    for (let z = Z0 - 6; z > Z0 - L; z -= 24) [-8.6, 8.6].forEach((x) => {
+      const p = new THREE.Mesh(poleGeo, poleMat); p.position.set(x, 3.75, z); road.scene.add(p);
+      const s = new THREE.Sprite(glowMat); s.position.set(x * .86, 7.4, z); s.scale.set(3, 3, 1); road.scene.add(s);
+      const pool = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), poolMat); pool.rotation.x = -Math.PI / 2; pool.position.set(x * .6, .02, z); road.scene.add(pool);
+    });
+    // billboards
+    const boards = CORNERS.map(([n, a, title], i) => {
+      const g = new THREE.Group(), h = 5.2, w = Math.min(8.4, h * a);
+      const frame = new THREE.Mesh(new THREE.PlaneGeometry(w + .3, h + .3), new THREE.MeshBasicMaterial({ color: 0xe4572e }));
+      frame.position.z = -.02; g.add(frame);
+      g.add(photo(n, w, h, { fog: true }));
+      const post = new THREE.Mesh(new THREE.BoxGeometry(.25, 4.2, .25), poleMat); post.position.set(0, -h / 2 - 2.1, -.1); g.add(post);
+      const side = i % 2 ? 1 : -1;
+      g.userData = { side, w, z: Z0 - 40 - i * 46 };
+      road.scene.add(g);
+      return g;
+    });
+    // convoy: three cars ahead, ember tail lights
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x1b1c21 }), glassMat = new THREE.MeshLambertMaterial({ color: 0x0b0c0f }), tailMat = new THREE.MeshBasicMaterial({ color: 0xff5a32 });
+    const tailGlow = new THREE.SpriteMaterial({ map: glowTex, color: 0xe4572e, transparent: true, opacity: .9, depthWrite: false, blending: THREE.AdditiveBlending });
+    const convoy = [[-4.6, 13, 0], [4.6, 21, 1.7], [0, 31, 3.1]].map(([x, ahead, ph]) => {
+      const car = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.BoxGeometry(2, .55, 4.3), bodyMat); body.position.y = .55; car.add(body);
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(1.55, .42, 2), glassMat); cab.position.set(0, 1.03, .2); car.add(cab);
+      [-1, 1].forEach((s) => { const t = new THREE.Mesh(new THREE.BoxGeometry(.5, .12, .05), tailMat); t.position.set(s * .72, .7, 2.16); car.add(t); const gsp = new THREE.Sprite(tailGlow); gsp.position.set(s * .72, .7, 2.25); gsp.scale.set(1.6, .9, 1); car.add(gsp); });
+      road.scene.add(car); return { car, x, ahead, ph };
+    });
+    let rCur = 0, rShown = -1;
+    const lastBoard = boards[boards.length - 1].userData.z;
+    road.update = (t) => {
+      const target = sceneP($("corners"));
+      rCur += (target - rCur) * (reduce ? 1 : .1);
+      const camZ = Z0 + 4 + (lastBoard - Z0 + 2) * rCur;
+      const sm = small();
+      road.cam.fov = sm ? 70 : 58; road.cam.updateProjectionMatrix();
+      road.cam.position.set(Math.sin(camZ * .03) * .5, 2.4, camZ);
+      road.cam.lookAt(0, 2.1, camZ - 20);
+      boards.forEach((b) => { const u = b.userData; b.position.set(u.side * (7.4 + u.w / 2 * (sm ? .7 : 1)), 6.6, u.z); b.rotation.y = -u.side * .42; });
+      convoy.forEach((c) => c.car.position.set(c.x + (reduce ? 0 : Math.sin(t * .5 + c.ph) * .15), reduce ? 0 : Math.sin(t * 2 + c.ph) * .03, camZ - c.ahead));
+      // the billboard we're approaching
+      let idx = boards.findIndex((b) => b.userData.z < camZ - 4);
+      if (idx < 0) idx = boards.length - 1;
+      if (idx !== rShown) {
+        rShown = idx; const c = CORNERS[idx];
+        $("cIdx").textContent = String(idx + 1).padStart(2, "0"); $("cTitle").textContent = c[2]; $("cCount").textContent = c[3];
+        $("cGo").setAttribute("href", c[4]); $("cGo").dataset.pick = c[5];
+        [...$("cSteps").children].forEach((s, i) => s.classList.toggle("on", i <= idx));
+      }
+      $("corners").querySelector(".c-head").style.opacity = String(1 - clamp(rCur * 5));
+    };
+    $("cGo").addEventListener("click", (e) => { if (e.currentTarget.dataset.pick) setFilter(e.currentTarget.dataset.pick); });
+
+    /* ---- C. turning showcase ---- */
+    show = makeStage($("glShow"), { alpha: true, fov: 40 });
+    const fadeTex = (() => { const c = document.createElement("canvas"); c.width = 4; c.height = 128; const g = c.getContext("2d"), grd = g.createLinearGradient(0, 0, 0, 128); grd.addColorStop(0, "#fff"); grd.addColorStop(.6, "#000"); g.fillStyle = grd; g.fillRect(0, 0, 4, 128); return new THREE.CanvasTexture(c); })();
+    const cards = V.map((v) => {
+      const g = new THREE.Group(), w = 3.2, h = 4;
+      const m = photo(v.img, w, h, { fog: false }); g.add(m);
+      const refl = photo(v.img, w, h, { fog: false }); refl.scale.y = -1; refl.position.y = -h - .12;
+      refl.material.alphaMap = fadeTex; refl.material.opacity = .22; g.add(refl);
+      const rim = new THREE.Mesh(new THREE.PlaneGeometry(w + .08, h + .08), new THREE.MeshBasicMaterial({ color: new THREE.Color(v.color), transparent: true, opacity: .55 })); rim.position.z = -.01; g.add(rim);
+      show.scene.add(g); return g;
+    });
+    let sPos = 0;
+    show.update = () => {
+      const p = sceneP($("featured")), n = list.length;
+      const raw = p * Math.max(0, n - 1), base = Math.floor(raw), f = raw - base;
+      const eased = f < .3 ? 0 : f > .7 ? 1 : (f - .3) / .4;
+      const target = Math.min(n - 1, base + (reduce ? Math.round(f) : eased));
+      sPos += (target - sPos) * (reduce ? 1 : .12);
+      const sm = small(), gap = sm ? 4.2 : 5.6;
+      show.cam.position.set(0, .4, sm ? 13.5 : 11); show.cam.lookAt(0, .2, 0);
+      cards.forEach((g, vi) => {
+        const k = list.indexOf(vi);
+        if (k < 0) { g.visible = false; return; }
+        g.visible = true;
+        const d = k - sPos;
+        g.position.set(d * gap, sm ? .9 : .3, -Math.abs(d) * 3.4);
+        g.rotation.y = -d * .55;
+        g.children.forEach((c) => (c.material.opacity = c === g.children[1] ? .22 * clamp(1 - Math.abs(d)) : c === g.children[2] ? .55 * clamp(1 - Math.abs(d)) : clamp(1 - Math.abs(d) * .7)));
+      });
+      showInfo(list[Math.round(clamp(sPos, 0, n - 1))]);
+    };
+
+    const resize = () => stages.forEach((s) => s.size());
+    addEventListener("resize", resize);
+    resize();
+  }
+
+  /* ---------------- page scroll (progress, rail, panels) ---------------- */
+  const root = document.documentElement;
+  const eEls = [...document.querySelectorAll("[data-e]")], mEls = [...document.querySelectorAll("[data-m]")];
+  const rail = [...document.querySelectorAll(".rail a")], secs = [...document.querySelectorAll("[data-ch-sec]")];
+  function page() {
+    const vh = innerHeight, max = Math.max(1, root.scrollHeight - vh);
+    root.style.setProperty("--doc", (scrollY / max).toFixed(4));
+    if (!reduce) {
+      for (const el of eEls) { const r = el.getBoundingClientRect(); el.style.setProperty("--e", clamp((vh - r.top) / (vh * .8)).toFixed(4)); }
+      for (const el of mEls) { const r = el.getBoundingClientRect(); el.style.setProperty("--m", clamp((vh - r.top) / (vh + r.height)).toFixed(4)); }
+    }
+    let cur = secs[0];
+    for (const s of secs) if (s.offsetTop <= scrollY + vh * .5) cur = s;
+    rail.forEach((a) => a.classList.toggle("on", a.dataset.ch === cur.dataset.chSec));
+    if (!counted && $("clubs").getBoundingClientRect().top < vh * .55) countUp();
+  }
+  addEventListener("scroll", page, { passive: true });
+  addEventListener("resize", page);
+  page();
+
+  /* one loop renders only the WebGL chapter on screen */
+  if (glOK) {
+    const clock = new THREE.Clock();
+    const map = [[gallery, $("gallery")], [road, $("corners")], [show, $("featured")]];
+    (function loop() {
+      const t = clock.getElapsedTime();
+      for (const [st, el] of map) if (visible(el)) { st.update(t); st.r.render(st.scene, st.cam); }
+      requestAnimationFrame(loop);
+    })();
+  }
+})();
+</script>

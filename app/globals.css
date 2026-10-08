@@ -1,26 +1,463 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------ */
+/* KARVAAN design tokens                                               */
+/* Dark, metallic, restrained. One accent (ember) used sparingly for   */
+/* live state, route lines and primary intent.                          */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-ink: #070708;
+  --color-carbon: #0c0c0e;
+  --color-graphite: #131316;
+  --color-charcoal: #1b1b1f;
+  --color-steel: #2a2a2f;
+  --color-ivory: #ece8df;
+  --color-silver: #a9a8a4;
+  --color-mute: #7a7975;
+  --color-ember: #e4572e;
+  --color-ember-soft: #e4572e26;
+  --color-line: #ece8df14;
+  --color-line-strong: #ece8df2b;
+
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), var(--font-inter), sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ember) 40%, transparent);
+    }
+    50% {
+      opacity: 0.6;
+      box-shadow: 0 0 0 5px transparent;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Themes. "night" is the default; "concours" is the light editorial   */
+/* theme. Everything in the UI reads these tokens.                     */
+/* ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+  --cut: 14px;
+  --metal-sheen: #ffffff08;
+  --metal-1: #1d1d21;
+  --metal-2: #111114;
+  --metal-3: #0b0b0d;
+  --grain: 0.05;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Concours — warm ivory paper, graphite type, rosso accent. */
+[data-theme="concours"] {
+  color-scheme: light;
+  --color-ink: #f3efe6;
+  --color-carbon: #ebe6db;
+  --color-graphite: #e4ded1;
+  --color-charcoal: #d9d2c3;
+  --color-steel: #c9c1b0;
+  --color-ivory: #16161a;
+  --color-silver: #4f4d48;
+  --color-mute: #7d7a72;
+  --color-ember: #b3191f;
+  --color-ember-soft: #b3191f1f;
+  --color-line: #16161a17;
+  --color-line-strong: #16161a33;
+  --metal-sheen: #ffffff66;
+  --metal-1: #efeadf;
+  --metal-2: #e6e0d3;
+  --metal-3: #dcd5c6;
+  --grain: 0.035;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Photo-led sections keep the dark palette in every theme, so photographs
+   are never washed out and type over them stays legible. */
+.on-photo,
+body:has(#main > .on-photo:first-child) [data-header][data-solid="false"] {
+  --color-ink: #070708;
+  --color-carbon: #0c0c0e;
+  --color-graphite: #131316;
+  --color-charcoal: #1b1b1f;
+  --color-steel: #2a2a2f;
+  --color-ivory: #ece8df;
+  --color-silver: #a9a8a4;
+  --color-mute: #7a7975;
+  --color-line: #ece8df14;
+  --color-line-strong: #ece8df2b;
+  --metal-sheen: #ffffff08;
+  --metal-1: #1d1d21;
+  --metal-2: #111114;
+  --metal-3: #0b0b0d;
+  color: var(--color-ivory);
+}
+
+html {
+  background: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+  /* Nothing may push the page sideways — on phones a too-wide page "floats"
+     left and right while scrolling. (iOS needs this on <html>, not only <body>.) */
+  overflow-x: clip;
+}
+
+/* A grid with no column template gets one column that can shrink to the screen
+   (the browser default sizes it to the widest content, which can overflow on
+   phones). Any grid-cols-* utility overrides this. */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ink);
+  color: var(--color-ivory);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+/* Film grain over everything — keeps flat blacks from looking digital. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection {
+  background: var(--color-ember);
+  color: var(--color-ink);
+}
+
+/* Keyboard focus ring. In the base layer so a component can opt out with
+   `outline-none` (e.g. the search box, which highlights its whole row instead). */
+@layer base {
+  :focus-visible {
+    outline: 1px solid var(--color-ivory);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Expanded, heavy uppercase — vehicle names and headlines. */
+  .display {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 0.92;
+  }
+  .display-light {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 300;
+    text-transform: uppercase;
+    line-height: 0.95;
+  }
+  /* Small uppercase metadata — the "instrument" voice. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 1.35;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-silver);
+  }
+  .readout {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Signature cut-corner silhouette (top-right + bottom-left). */
+  .chamfer {
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+  }
+  .chamfer-tr {
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+  }
+
+  /* Brushed dark metal surface. */
+  .metal {
+    background:
+      linear-gradient(180deg, var(--metal-sheen), transparent 40%),
+      linear-gradient(155deg, var(--metal-1) 0%, var(--metal-2) 45%, var(--metal-3) 100%);
+  }
+  .hairline {
+    box-shadow: inset 0 0 0 1px var(--color-line);
+  }
+  .hairline-strong {
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+
+  /* Registration ticks on the corners of framed media. */
+  .ticks {
+    position: relative;
+  }
+  .ticks::before,
+  .ticks::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .ticks::before {
+    top: 10px;
+    left: 10px;
+    border-top: 1px solid var(--color-line-strong);
+    border-left: 1px solid var(--color-line-strong);
+  }
+  .ticks::after {
+    right: 10px;
+    bottom: 10px;
+    border-right: 1px solid var(--color-line-strong);
+    border-bottom: 1px solid var(--color-line-strong);
+  }
+
+  .btn {
+    --cut: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    height: 48px;
+    padding: 0 1.4rem;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-out-expo),
+      color 0.3s var(--ease-out-expo),
+      box-shadow 0.3s var(--ease-out-expo),
+      opacity 0.3s;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: #fff;
+  }
+  .btn-ghost {
+    color: var(--color-ivory);
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .btn-ghost:hover {
+    box-shadow: inset 0 0 0 1px var(--color-ivory);
+  }
+  .btn-ember {
+    background: var(--color-ember);
+    color: var(--color-ink);
+  }
+  .btn-ember:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-ember) 85%, white);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 34px;
+    padding: 0 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-silver);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    border-radius: 2px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.25s var(--ease-out-expo);
+  }
+  .chip:hover {
+    color: var(--color-ivory);
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  }
+  .chip[data-active="true"] {
+    color: var(--color-ink);
+    background: var(--color-ivory);
+    box-shadow: none;
+  }
+
+  .field {
+    width: 100%;
+    height: 48px;
+    padding: 0 1rem;
+    background: var(--color-graphite);
+    color: var(--color-ivory);
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    border-radius: 2px;
+    font-size: 15px;
+    outline: none;
+    transition: box-shadow 0.2s;
+  }
+  .field:focus {
+    box-shadow: inset 0 0 0 1px var(--color-silver);
+  }
+  .field::placeholder {
+    color: var(--color-mute);
+  }
+  select.field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23908f8a' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fades used on image stages so type always sits on dark. */
+  .scrim-b {
+    background: linear-gradient(to top, var(--color-ink) 0%, color-mix(in srgb, var(--color-ink) 65%, transparent) 38%, transparent 72%);
+  }
+  .scrim-l {
+    background: linear-gradient(to right, var(--color-ink) 0%, color-mix(in srgb, var(--color-ink) 75%, transparent) 32%, transparent 75%);
+  }
+
+  .container-x {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+  @media (min-width: 768px) {
+    .container-x {
+      padding-inline: 32px;
+    }
+  }
+  @media (min-width: 1280px) {
+    .container-x {
+      padding-inline: 48px;
+    }
+  }
+}
+
+/* Game cards (components/cards/GameCard.tsx). Small trading cards:
+   two per row on phones, about 220px wide on bigger screens. */
+:root {
+  --card-w: 220px;
+}
+@media (max-width: 639px) {
+  :root {
+    /* two cards side by side inside the 16px page gutters, 12px apart */
+    --card-w: calc((100vw - 44px) / 2);
+  }
+}
+
+@layer components {
+  /* Grid of game cards: 2 per row on phones, as many 200–240px cards as fit above. */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (min-width: 640px) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px 16px;
+    }
+  }
+  @media (min-width: 1536px) {
+    .card-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+  }
+
+  .game-card {
+    position: relative;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 5cqi;
+    background: var(--color-graphite);
+    border: 1px solid var(--color-line-strong);
+    box-shadow: 0 1.2cqi 5cqi -2cqi #0008;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s, box-shadow 0.35s;
+    isolation: isolate;
+  }
+  /* Photo fades into the card colour (works in both themes). */
+  .game-art-fade {
+    /* Reaches solid card colour a little before the photo's edge and overlaps
+       it by 2px, so no sliver of the photo can show as a light line. */
+    inset: 0 0 -2px 0;
+    background: linear-gradient(to bottom, #0000004d, transparent 35%, transparent 52%, var(--color-graphite) 94%);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .game-card:hover {
+      transform: translateY(-3px);
+      border-color: color-mix(in srgb, var(--color-ivory) 18%, transparent);
+      box-shadow: 0 3cqi 8cqi -3cqi #000a;
+    }
+  }
+  /* Clicks fall through to the card's link underneath, except on buttons
+     (like) which opt back in with pointer-events: auto. */
+  .game-card-body {
+    position: relative;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    margin-top: -12cqi; /* the name sits over the photo's fade */
+    padding: 0 5cqi 4.2cqi;
+  }
+  .game-display {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 800;
+    text-transform: uppercase;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+  }
+  .game-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-transform: uppercase;
+    line-height: 1.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
